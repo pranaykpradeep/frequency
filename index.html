@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techpocalypse: The Last Signal</title>
+    <style>
+        body {
+            background: #000;
+            color: #0af;
+            font-family: 'Courier Prime', monospace;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .crt::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .terminal {
+            padding: 20px;
+            white-space: pre-wrap;
+            text-shadow: 0 0 5px #0af;
+            animation: flicker 8s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 22%, 24%, 55% { opacity: 0.2; }
+        }
+
+        .radio {
+            border: 1px solid #f00;
+            padding: 10px;
+            background: rgba(0, 10, 20, 0.7);
+            margin: 20px;
+        }
+
+        .frequency {
+            font-size: 24px;
+            color: #0af;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #333;
+            height: 10px;
+        }
+
+        .alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #300;
+            border: 2px solid #f00;
+            padding: 20px;
+            color: #fff;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        .morse-code {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            display: none;
+        }
+    </style>
+</head>
+<body class="crt">
+    <div class="terminal" id="terminal">
+        > SYSTEM BOOTING...
+        > IEEE EMERGENCY TRANSMISSION NETWORK [v3.1.4]
+        > LAST KNOWN SIGNAL: [CORRUPTED]
+        > SCANNING...
+    </div>
+
+    <div class="radio">
+        <div class="frequency">FREQ: <span id="freqDisplay">104.7</span> MHz</div>
+        <input type="range" id="tuner" min="88.0" max="108.0" step="0.1" value="104.7">
+        <div class="signal" id="signal">SIGNAL: ▁▂▃▄▅▆▇</div>
+        <div class="morse-code" id="morseCode"></div>
+    </div>
+
+    <div class="alert" id="alert">
+        WARNING: SIGNAL DEGRADING
+    </div>
+
+    <audio id="staticNoise" loop>
+        <source src="static.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="transmission">
+        <source src="transmission.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // TERMINAL TYPING EFFECT
+        const terminal = document.getElementById('terminal');
+        const messages = [
+            "> CONNECTING TO BACKUP NODE... FAILED",
+            "> IEEE BANDWIDTH CRITICAL",
+            "> LAST TRANSMISSION DETECTED: 99.3 MHz",
+            "> ADJUST FREQUENCY TO RECOVER SIGNAL"
+        ];
+
+        let currentLine = 0;
+        function typeTerminal() {
+            if (currentLine < messages.length) {
+                terminal.innerHTML += "\n" + messages[currentLine];
+                currentLine++;
+                setTimeout(typeTerminal, 2000);
+            }
+        }
+        setTimeout(typeTerminal, 3000);
+
+        // RADIO TUNER LOGIC
+        const tuner = document.getElementById('tuner');
+        const freqDisplay = document.getElementById('freqDisplay');
+        const signalDisplay = document.getElementById('signal');
+        const staticNoise = document.getElementById('staticNoise');
+        const transmission = document.getElementById('transmission');
+        const alertBox = document.getElementById('alert');
+        const morseCodeDisplay = document.getElementById('morseCode');
+
+        // Correct frequencies (hidden until found)
+        const correctFrequencies = {
+            "104.7": true,
+           // "98.5": true,
+            //"88.3": true
+        };
+
+        // Morse code for "please save the communication"
+        const morseMessage = "- .... . / .-.. .- ... - / -.-. --- -- -- ..- -. .. -.-. .- - .. --- -. / .. ... / .-..-. .. . . . ... -... --. . -.-. .. .-..-. / .... . .-.. .--. / - --- / .-. . ... - --- .-. .";
+        let morseIndex = 0;
+        let morseInterval;
+
+        function displayMorseCode() {
+            morseCodeDisplay.style.display = "block";
+            morseCodeDisplay.textContent = "DECODING: ";
+            morseIndex = 0;
+            
+            clearInterval(morseInterval);
+            morseInterval = setInterval(() => {
+                if (morseIndex < morseMessage.length) {
+                    morseCodeDisplay.textContent += morseMessage[morseIndex];
+                    morseIndex++;
+                } else {
+                    clearInterval(morseInterval);
+                    setTimeout(() => {
+                        morseCodeDisplay.textContent = "failed to decode : - .... . / .-.. .- ... - / -.-. --- -- -- ..- -. .. -.-. .- - .. --- -. / .. ... / .-..-. .. . . . ... -... --. . -.-. .. .-..-. / .... . .-.. .--. / - --- / .-. . ... - --- .-. .";
+                    }, 1000);
+                }
+            }, 100);
+        }
+
+        tuner.addEventListener('input', function() {
+            const freq = this.value;
+            freqDisplay.textContent = freq;
+
+            // Stop any ongoing transmissions immediately
+            transmission.pause();
+            transmission.currentTime = 0;
+            clearInterval(morseInterval);
+            morseCodeDisplay.style.display = "none";
+
+            // Play static noise (louder when far from correct freq)
+            staticNoise.play();
+            const randStatic = Math.random() * 0.5 + 0.5;
+            staticNoise.volume = randStatic;
+
+            // If correct frequency, play transmission
+            if (correctFrequencies[freq]) {
+                staticNoise.pause();
+                transmission.play();
+                signalDisplay.textContent = "SIGNAL: ███████";
+                showAlert("TRANSMISSION ACQUIRED");
+                displayMorseCode();
+            } else {
+                signalDisplay.textContent = "SIGNAL: ▁▂▃▄▅▆▇".slice(0, Math.floor(Math.random() * 7) + 1);
+            }
+        });
+
+        // Random emergency alerts
+        function showAlert(msg) {
+            alertBox.textContent = msg;
+            alertBox.style.display = "block";
+            setTimeout(() => { alertBox.style.display = "none"; }, 2000);
+        }
+
+        setInterval(() => {
+            if (Math.random() > 0.8) {
+                showAlert("WARNING: SIGNAL DEGRADING");
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
