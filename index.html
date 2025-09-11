@@ -154,7 +154,8 @@
         };
 
         // Morse code for "please save the communication"
-        const morseMessage = "hey";
+        const morseMessage = "- .... . / .-.. .- ... - / -.-. --- -- -- ..- -. .. -.-. .- - .. --- -. / .. ... / .-..-. .. . . . --. . -.-. .. ..--.- -... --- - .-..-. / .... . .-.. .--. / - --- / .-. . ... - --- .-. .
+";
         let morseIndex = 0;
         let morseInterval;
 
@@ -171,7 +172,8 @@
                 } else {
                     clearInterval(morseInterval);
                     setTimeout(() => {
-                        morseCodeDisplay.textContent = "failed to decode :heyy";
+                        morseCodeDisplay.textContent = "failed to decode : - .... . / .-.. .- ... - / -.-. --- -- -- ..- -. .. -.-. .- - .. --- -. / .. ... / .-..-. .. . . . --. . -.-. .. ..--.- -... --- - .-..-. / .... . .-.. .--. / - --- / .-. . ... - --- .-. .
+";
                     }, 1000);
                 }
             }, 100);
@@ -219,6 +221,7 @@
     </script>
 </body>
 </html>
+
 
 
 
